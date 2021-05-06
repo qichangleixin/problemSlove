@@ -1,4 +1,4 @@
-package com.isszwy.zhyq.util.httpAsync;
+package com.qcx.util.httpAsync;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
