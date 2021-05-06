@@ -1,0 +1,164 @@
+package com.isszwy.zhyq.util.httpAsync;
+
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
+import static org.asynchttpclient.Dsl.*;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+
+import org.asynchttpclient.Param;
+import org.asynchttpclient.Request;
+import org.asynchttpclient.RequestBuilder;
+import org.asynchttpclient.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class HttpAsyncUtil {
+	
+	private static Logger log = LoggerFactory.getLogger(HttpAsyncUtil.class);
+	
+	
+	/**
+     * 发送application/x-www-form-urlencoded请求
+     * @param url
+     * @return CompletableFuture<String>
+     */
+    public static CompletableFuture<String> doGet(String url) {  
+        return doGet(url, null,null);  
+    }
+    
+	/**
+     * 发送application/x-www-form-urlencoded请求
+     * @param url
+     * @param param
+     * @param header
+     * @return CompletableFuture<String>
+     */
+	public static CompletableFuture<String> doGet(String url, Map<String, String> param,Map<String, String> header) {
+		log.info("### request url : {} , param : {} , header : {} !",url,param,header);
+    	RequestBuilder request = get(url);
+    	if (header != null) {
+    		HttpHeaders headers = new DefaultHttpHeaders();
+            for (String key : header.keySet()) {
+                headers.add(key, header.get(key));
+            }
+            request.setHeaders(headers);
+        } 
+    	if (param != null) {
+    		List<Param> paramList = new ArrayList<>();  
+    		for (String key : param.keySet()) {
+    			if(param.get(key) !=null){
+    				paramList.add(new Param(key, String.valueOf(param.get(key))));
+    			}
+    		}
+    		request.setFormParams(paramList);
+    	}
+    	CompletableFuture<String> resultFuture= HttpAsyncClient.getInstance().
+	    		prepareRequest(request).execute().toCompletableFuture()
+	    					.exceptionally(new Function<Throwable, Response>() {
+	    		            	@Override
+	    		            	public Response apply(Throwable throwable) {
+	    		            		System.out.println("exceptionally - apply ：" + throwable.toString());
+	    		            		log.error("### send get request error occured !", throwable);
+	    		            		return null;
+	    		            	}
+	    		            })
+	    		            .thenApply(response -> {
+	    		               if (response.getStatusCode() == 200) { 
+	    		            		return response.getResponseBody();
+	    		               }else{
+	    		            		log.error("### get response error occured !", response.getResponseBody());
+		    		               return null;
+	    		               }
+	    		            });
+		return resultFuture;
+	}
+	
+	
+	
+    public static CompletableFuture<String> doPost(String url) {  
+        return doPost(url, null, null);
+    }
+	
+	/**
+     * 发送application/octet-stream请求
+     * @param url
+     * @param param
+     * @param header
+     * @return CompletableFuture<String>
+     */
+    public static CompletableFuture<String> doPost(String url, Map<String, String> param,Map<String, String> header) {
+    	log.info("### request url : {} , param : {} , header : {} !",url,param,header);
+    	RequestBuilder request = post(url);
+    	if (header != null) {
+    		HttpHeaders headers = new DefaultHttpHeaders();
+            for (String key : header.keySet()) {
+                headers.add(key, header.get(key));
+            }
+            request.setHeaders(headers);
+        } 
+    	if (param != null) {
+    		List<Param> paramList = new ArrayList<>();  
+    		for (String key : param.keySet()) {
+    			if(param.get(key) !=null){
+    				paramList.add(new Param(key, String.valueOf(param.get(key))));
+    			}
+    		}
+    		request.setFormParams(paramList);
+    	}
+    	CompletableFuture<String> resultFuture= HttpAsyncClient.getInstance().
+	    		prepareRequest(request).execute().toCompletableFuture()
+	    					.exceptionally(new Function<Throwable, Response>() {
+	    		            	@Override
+	    		            	public Response apply(Throwable throwable) {
+	    		            		System.out.println("exceptionally - apply ：" + throwable.toString());
+	    		            		log.error("### send Post request error occured !", throwable);
+	    		            		return null;
+	    		            	}
+	    		            })
+	    		            .thenApply(response -> {
+	    		               if (response.getStatusCode() == 200) { 
+	    		            		return response.getResponseBody();
+	    		               }else{
+	    		            		log.error("### get Post response error occured !", response.getResponseBody());
+		    		               return null;
+	    		               }
+	    		            });
+		return resultFuture;
+    }
+	
+	/**
+     * 发送application/json请求
+     * @param url
+     * @param json
+     * @return CompletableFuture<String>
+     */
+	public static CompletableFuture<String> doPostJson(String url, String json){
+        Request request = post(url).setBody(json).setHeader("content-type", APPLICATION_JSON).build();
+	    CompletableFuture<String> resultFuture= HttpAsyncClient.getInstance().
+	    		prepareRequest(request).execute().toCompletableFuture()
+	    					.exceptionally(new Function<Throwable, Response>() {
+	    		            	@Override
+	    		            	public Response apply(Throwable throwable) {
+	    		            		System.out.println("exceptionally - apply ：" + throwable.toString());
+	    		            		log.error("### send PostJson request error occured !", throwable);
+	    		            		return null;
+	    		            	}
+	    		            })
+	    		            .thenApply(response -> {
+	    		               if (response.getStatusCode() == 200) { 
+	    		            		return response.getResponseBody();
+	    		               }else{
+	    		            		log.error("### get PostJson response error occured !", response.getResponseBody());
+		    		               return null;
+	    		               }
+	    		            });
+		return resultFuture;
+	}
+
+}
